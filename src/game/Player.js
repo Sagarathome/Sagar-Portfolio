@@ -23,7 +23,8 @@ export default class Player {
     this.hitboxOffsetX = (this.width - this.hitboxWidth) / 2;
     this.hitboxOffsetY = this.height - this.hitboxHeight - 6;
 
-    this.speed = 0.8;
+    /** Pixels per second (delta-time independent) */
+    this.speed = 60;
 
     this.frameX = 0;
     this.frameY = 0;
@@ -43,34 +44,36 @@ export default class Player {
 
   /**
    * @param collision - from buildDefaultCollision / your own grid; pass null to disable
+   * @param deltaTime - seconds since last frame (for frame-rate independent movement)
    */
-  update(input, canvas, collision) {
+  update(input, canvas, collision, deltaTime = 1/60) {
     this.syncSpriteSizeFromImage();
 
+    const move = this.speed * deltaTime;
     let dx = 0;
     let dy = 0;
     let isMoving = false;
 
     if (input.keys.ArrowRight) {
-      dx += this.speed;
+      dx += move;
       this.frameY = 1;
       isMoving = true;
     }
 
     if (input.keys.ArrowLeft) {
-      dx -= this.speed;
+      dx -= move;
       this.frameY = 3;
       isMoving = true;
     }
 
     if (input.keys.ArrowUp) {
-      dy -= this.speed;
+      dy -= move;
       this.frameY = 2;
       isMoving = true;
     }
 
     if (input.keys.ArrowDown) {
-      dy += this.speed;
+      dy += move;
       this.frameY = 0;
       isMoving = true;
     }
