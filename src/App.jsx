@@ -15,7 +15,7 @@ const App = () => {
         <p className="canvas-caption">
           Use arrow keys to move. Walk to a building entrance and press Enter to open. Escape to close.
         </p>
-      </section>
+w      </section>
     </div>
   )
 }

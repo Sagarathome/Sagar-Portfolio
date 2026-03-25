@@ -188,7 +188,7 @@ function GameCanvas() {
                             )}
                         </div>
                         <button type="button" className="building-modal-close" onClick={closeModal}>
-                            Close
+                            CLOSE
                         </button>
                         <p className="building-modal-hint">Press Escape to close</p>
                     </div>

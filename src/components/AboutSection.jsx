@@ -1,7 +1,7 @@
 import React from 'react'
 
 const AboutSection = () => (
-  <div className="modal-section">
+  <div className="modal-section about">
     <h2>About Me</h2>
     <p>
       Hi, I'm Sagar Prajapati — a passionate Frontend Developer with 2+ years of experience in building scalable, high-performance web applications.

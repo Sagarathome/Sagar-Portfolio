@@ -8,7 +8,7 @@ const contacts = [
 ]
 
 const ContactSection = () => (
-  <div className="modal-section">
+  <div className="modal-section contact">
     <h2>Contact</h2>
     <div className="contact-links">
       {contacts.map(({ icon, href, text, external }) => (

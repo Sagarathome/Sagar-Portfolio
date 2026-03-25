@@ -1,7 +1,7 @@
 import React from 'react'
 
 const ExperienceSection = () => (
-  <div className="modal-section">
+  <div className="modal-section experience">
     <h2>Experience</h2>
     <div className="experience-card">
       <h3>Frontend Developer</h3>

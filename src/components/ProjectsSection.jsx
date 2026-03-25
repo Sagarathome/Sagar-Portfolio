@@ -18,7 +18,7 @@ const projects = [
 ]
 
 const ProjectsSection = () => (
-  <div className="modal-section">
+  <div className="modal-section projects">
     <h2>Projects</h2>
     <div className="projects-list">
       {projects.map((project) => (

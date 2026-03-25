@@ -8,7 +8,7 @@ const skillGroups = [
 ]
 
 const SkillsSection = () => (
-  <div className="modal-section">
+  <div className="modal-section skills">
     <h2>Skills</h2>
     <div className="skills-grid">
       {skillGroups.map((group) => (
