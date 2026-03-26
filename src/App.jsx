@@ -3,20 +3,22 @@ import GameCanvas from './components/GameCanvas'
 
 const App = () => {
   return (
-    <div className="app-shell">
+    <main className="app-shell">
       <header className="hero-section">
-        <h1>My portfolio</h1>
+        <h1>Sagar Prajapati</h1>
         <p className="tagline">
-          A small city scene—explore and wander.
+          Welcome to my interactive portfolio. Explore the city to discover my
+          projects, skills, and experience.
         </p>
       </header>
-      <section className="canvas-section" aria-label="Interactive demo">
+      <section
+        className="canvas-section"
+        aria-label="Interactive portfolio city"
+      >
         <GameCanvas />
-        <p className="canvas-caption">
-          Use arrow keys to move. Walk to a building entrance and press Enter to open. Escape to close.
-        </p>
-w      </section>
-    </div>
+        
+      </section>
+    </main>
   )
 }
 

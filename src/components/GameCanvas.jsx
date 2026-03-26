@@ -10,18 +10,44 @@ import {
     drawGridOverlay,
     getGameCanvasSize,
 } from '../game/collision';
-import AboutSection from './AboutSection';
-import ExperienceSection from './ExperienceSection';
-import SkillsSection from './SkillsSection';
-import ContactSection from './ContactSection';
-import ProjectsSection from './ProjectsSection';
+import Modal from './modal/Modal';
+import Dialog from './dialog/Dialog';
+import IntroMessage from './intro/IntroMessage';
+import Instruction from './instructions/Instruction';
 
 const { width: CANVAS_W, height: CANVAS_H } = getGameCanvasSize();
 
 function GameCanvas() {
     const canvasRef = useRef(null);
     const modalOpenRef = useRef(false);
+    const playerDialogRef = useRef(null);
+    const introMessageRef = useRef(null);
+    const instructionRef = useRef(null);
+    const initialPlayerPositionRef = useRef(null);
+    const hasLeftInitialPositionRef = useRef(false);
+    const dialogMessageRef = useRef('');
+    const showIntroMessageRef = useRef(true);
+    const showInstructionRef = useRef(false);
     const [buildingModal, setBuildingModal] = useState(null);
+    const [dialogMessage, setDialogMessage] = useState('');
+    const [showIntroMessage, setShowIntroMessage] = useState(true);
+    const [showInstruction, setShowInstruction] = useState(false);
+
+    useEffect(() => {
+        showIntroMessageRef.current = showIntroMessage;
+    }, [showIntroMessage]);
+
+    useEffect(() => {
+        showInstructionRef.current = showInstruction;
+    }, [showInstruction]);
+
+    useEffect(() => {
+        document.body.classList.toggle('modal-open', Boolean(buildingModal));
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [buildingModal]);
+
 
     const closeModal = () => {
         modalOpenRef.current = false;
@@ -51,6 +77,9 @@ function GameCanvas() {
         }
 
         const player = new Player(playerImage, canvas.width / 2 - 32, canvas.height / 2 - 32);
+        initialPlayerPositionRef.current = { x: player.x, y: player.y };
+        hasLeftInitialPositionRef.current = false;
+        
         const collision = buildDefaultCollision(canvas.width, canvas.height);
 
         const input = { keys: {} };
@@ -60,8 +89,9 @@ function GameCanvas() {
             'ArrowLeft',
             'ArrowRight',
         ]);
+        const movementCodes = new Set([...arrowCodes, 'Space']);
         const clearMovementKeys = () => {
-            for (const code of arrowCodes) input.keys[code] = false;
+            for (const code of movementCodes) input.keys[code] = false;
         };
         const onKeyDown = (e) => {
             if (modalOpenRef.current) {
@@ -72,7 +102,7 @@ function GameCanvas() {
                 }
                 return;
             }
-            if (arrowCodes.has(e.code)) e.preventDefault();
+            if (movementCodes.has(e.code)) e.preventDefault();
             input.keys[e.code] = true;
             if (e.code === 'Enter' && !e.repeat) {
                 const entrance = getEntranceAtPlayer(player, canvas.width, canvas.height);
@@ -90,7 +120,7 @@ function GameCanvas() {
         };
         const onKeyUp = (e) => {
             if (modalOpenRef.current) return;
-            if (arrowCodes.has(e.code)) e.preventDefault();
+            if (movementCodes.has(e.code)) e.preventDefault();
             input.keys[e.code] = false;
         };
         window.addEventListener('keydown', onKeyDown);
@@ -114,29 +144,62 @@ function GameCanvas() {
             drawCollisionDebug(ctx, collision);
 
             if (modalOpenRef.current) clearMovementKeys();
+            const prevX = player.x;
+            const prevY = player.y;
             player.update(input, canvas, collision, deltaTime);
             player.draw(ctx);
-
+            const initialPosition = initialPlayerPositionRef.current;
+            if (!hasLeftInitialPositionRef.current && initialPosition) {
+                const hasMovedFromStart = player.x !== initialPosition.x || player.y !== initialPosition.y;
+                if (hasMovedFromStart) {
+                    hasLeftInitialPositionRef.current = true;
+                    if (showInstructionRef.current) setShowInstruction(false);
+                }
+            }
             const entrance = getEntranceAtPlayer(player, canvas.width, canvas.height);
-            if (entrance && !modalOpenRef.current) {
-                ctx.font = 'bold 16px sans-serif';
-                ctx.textAlign = 'center';
-                const msg = `Press Enter — ${entrance.title}`;
-                const padding = 12;
-                const textW = ctx.measureText(msg).width;
-                const boxX = canvas.width / 2 - textW / 2 - padding;
-                const boxY = canvas.height - 100;
-                const boxW = textW + padding * 2;
-                const boxH = 28;
-                ctx.fillStyle = 'rgba(0,0,0,0.75)';
-                ctx.beginPath();
-                ctx.roundRect(boxX, boxY, boxW, boxH, 6);
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-                ctx.fillStyle = '#fff';
-                ctx.fillText(msg, canvas.width / 2, boxY + boxH / 2 + 5);
+            const nextDialogMessage = entrance && !modalOpenRef.current
+                ? `Press Enter - ${entrance.title}`
+                : '';
+            if (nextDialogMessage !== dialogMessageRef.current) {
+                dialogMessageRef.current = nextDialogMessage;
+                setDialogMessage(nextDialogMessage);
+            }
+
+            if (nextDialogMessage && playerDialogRef.current) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = rect.width / canvas.width;
+                const scaleY = rect.height / canvas.height;
+                const playerCenterX = player.x + player.width / 2;
+                const playerTopY = player.y - 10;
+                const screenX = rect.left + playerCenterX * scaleX;
+                const screenY = rect.top + playerTopY * scaleY;
+
+                playerDialogRef.current.style.left = `${screenX}px`;
+                playerDialogRef.current.style.top = `${screenY}px   `;
+            }
+            if (showIntroMessageRef.current && introMessageRef.current) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = rect.width / canvas.width;
+                const scaleY = rect.height / canvas.height;
+                const playerCenterX = player.x + player.width / 2 - 60;
+                const playerTopY = player.y - 1;
+                const screenX = rect.left + playerCenterX * scaleX;
+                const screenY = rect.top + playerTopY * scaleY;
+
+                introMessageRef.current.style.left = `${screenX}px`;
+                introMessageRef.current.style.top = `${screenY}px`;
+            }
+            if (showInstructionRef.current && instructionRef.current) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = rect.width / canvas.width;
+                const scaleY = rect.height / canvas.height;
+                const playerCenterX = player.x + player.width / 2;
+                const playerTopY = player.y + 90;
+                const screenX = rect.left + playerCenterX * scaleX;
+                const screenY = rect.top + playerTopY * scaleY;
+
+                instructionRef.current.style.left = `${screenX}px`;
+                instructionRef.current.style.top = `${screenY}px`;
             }
 
             animationId = requestAnimationFrame((t) => render(t));
@@ -151,6 +214,12 @@ function GameCanvas() {
         }
 
     }, []);
+
+    const handleIntroComplete = () => {
+        setShowIntroMessage(false);
+        setShowInstruction(!hasLeftInitialPositionRef.current);
+    };
+
     return (
         <div className="canvas-wrap">
             <canvas
@@ -162,38 +231,10 @@ function GameCanvas() {
                 role="img"
                 aria-label="City map game canvas"
             />
-            {buildingModal && (
-                <div
-                    className="building-modal-backdrop"
-                    role="presentation"
-                    onClick={closeModal}
-                >
-                    <div
-                        className="building-modal"
-                        role="dialog"
-                        aria-modal="true"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="building-modal-content">
-                            {buildingModal.id === 'about' && <AboutSection />}
-                            {buildingModal.id === 'experience' && <ExperienceSection />}
-                            {buildingModal.id === 'skills' && <SkillsSection />}
-                            {buildingModal.id === 'contact' && <ContactSection />}
-                            {buildingModal.id === 'projects' && <ProjectsSection />}
-                            {!['about', 'experience', 'skills', 'contact', 'projects'].includes(buildingModal.id) && (
-                                <>
-                                    <h2 className="building-modal-title">{buildingModal.title}</h2>
-                                    <p className="building-modal-body">{buildingModal.body}</p>
-                                </>
-                            )}
-                        </div>
-                        <button type="button" className="building-modal-close" onClick={closeModal}>
-                            CLOSE
-                        </button>
-                        <p className="building-modal-hint">Press Escape to close</p>
-                    </div>
-                </div>
-            )}
+            <Modal buildingModal={buildingModal} onClose={closeModal} />
+            <Dialog ref={playerDialogRef} message={dialogMessage} />
+            <IntroMessage ref={introMessageRef} visible={showIntroMessage} onComplete={handleIntroComplete} />
+            <Instruction ref={instructionRef} visible={showInstruction} />
         </div>
     )
 }

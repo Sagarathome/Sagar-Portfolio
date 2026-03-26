@@ -33,6 +33,13 @@ export default class Player {
 
     this.animationTick = 0;
     this.animationSpeed = 8;
+
+    this.jumpVelocity = 0;
+    this.jumpOffset = 0;
+    this.jumpForce = 280;
+    this.gravity = 720;
+    this.maxJumpHeight = 46;
+    this.wasSpaceDown = false;
   }
 
   syncSpriteSizeFromImage() {
@@ -78,6 +85,13 @@ export default class Player {
       isMoving = true;
     }
 
+    const spaceDown = Boolean(input.keys.Space || input.keys.Spacebar || input.keys[' ']);
+    const jumpPressed = spaceDown && !this.wasSpaceDown;
+    this.wasSpaceDown = spaceDown;
+    if (jumpPressed && this.jumpOffset <= 0) {
+      this.jumpVelocity = this.jumpForce;
+    }
+
     const hbW = this.hitboxWidth;
     const hbH = this.hitboxHeight;
     const hbOx = this.hitboxOffsetX;
@@ -97,6 +111,17 @@ export default class Player {
     if (this.y < 0) this.y = 0;
     if (this.x + this.width > canvas.width) this.x = canvas.width - this.width;
     if (this.y + this.height > canvas.height) this.y = canvas.height - this.height;
+
+    this.jumpOffset += this.jumpVelocity * deltaTime;
+    this.jumpVelocity -= this.gravity * deltaTime;
+    if (this.jumpOffset < 0) {
+      this.jumpOffset = 0;
+      this.jumpVelocity = 0;
+    }
+    if (this.jumpOffset > this.maxJumpHeight) {
+      this.jumpOffset = this.maxJumpHeight;
+      this.jumpVelocity = Math.min(this.jumpVelocity, 0);
+    }
 
     if (isMoving) {
       this.animationTick++;
@@ -132,7 +157,7 @@ export default class Player {
       this.spriteWidth,
       this.spriteHeight,
       this.x,
-      this.y,
+      this.y - this.jumpOffset,
       this.width,
       this.height
     );

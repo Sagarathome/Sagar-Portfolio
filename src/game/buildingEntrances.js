@@ -34,7 +34,8 @@ export const BUILDING_ENTRANCES = [
     id: 'skills',
     title: 'Skills',
     body: 'Languages, frameworks, and tools you want to highlight.',
-    gridCells: [[8,17], [9,17], [10,17], [11,17], [12,17], [13,17], [14,17], [15,17]],
+    // Keep this range narrow to avoid accidental overlap with nearby entrances.
+    gridCells: [[8, 17], [9, 17], [10, 17], [11, 17], [12, 17]],
   },
   {
     id: 'contact',
@@ -46,7 +47,8 @@ export const BUILDING_ENTRANCES = [
     id: 'projects',
     title: 'Projects',
     body: 'Portfolio projects.',
-    gridCells: [[4, 12], [5, 12], [6, 12], [7, 12]],
+    // Supports both upper-left and lower-row project entrance placements.
+    gridCells: [[8, 17], [9, 17], [10, 17], [11, 17], [12, 17], [4, 12], [5, 12], [6, 12], [7, 12], [13, 17], [14, 17], [15, 17]],
   },
 ];
 
